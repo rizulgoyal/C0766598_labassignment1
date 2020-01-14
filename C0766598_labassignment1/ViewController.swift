@@ -13,20 +13,15 @@ import CoreLocation
 class ViewController: UIViewController, CLLocationManagerDelegate {
     
     var locationManager = CLLocationManager()
-
-    @IBAction func buttonNavigation(_ sender: UIButton) {
-        
-        let currentlocation = mapView.userLocation
-        let currentlocationcoordinates = CLLocationCoordinate2D(latitude: currentlocation.coordinate.latitude, longitude: currentlocation.coordinate.longitude)
-        let destinationlocation = mapView.annotations
-        let destinationlocationcoordinates = CLLocationCoordinate2D(latitude: destinationlocation[0].coordinate.latitude, longitude: destinationlocation[0].coordinate.longitude)
-        print(String(currentlocationcoordinates.latitude) + " Longitude " + String(currentlocationcoordinates.longitude))
-        print(String(destinationlocationcoordinates.latitude) + " Longitude " + String(destinationlocationcoordinates.longitude))
-        
-        findroute(user: currentlocationcoordinates, destination: destinationlocationcoordinates)
-
+    
+    enum transporttype : String
+    {
+        case automobile
+        case walking
         
     }
+
+    
     
     
     
@@ -48,6 +43,38 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
          
          
     }
+    
+    @IBAction func buttonNavigation(_ sender: UIButton) {
+            
+            
+         let otherAlert = UIAlertController(title: "Transport Type", message: "Please choose one Transport Type.", preferredStyle: UIAlertController.Style.actionSheet)
+
+             
+
+              let walkingbutton = UIAlertAction(title: "Walking", style: UIAlertAction.Style.default, handler: walkingHandler)
+              
+              let autobutton = UIAlertAction(title: "Automobile", style: UIAlertAction.Style.default, handler: autoHandler)
+
+
+                  
+
+                  // relate actions to controllers
+                  otherAlert.addAction(walkingbutton)
+                  otherAlert.addAction(autobutton)
+
+            present(otherAlert, animated: true, completion: nil)
+            
+
+          
+            
+         
+
+            
+        }
+        
+       
+
+
     
     
      
@@ -98,11 +125,11 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
            mapView.setRegion(region, animated: true)
             mapView.showsUserLocation = true
             
-            let annotation = MKPointAnnotation()
-            annotation.title = "You are here"
-           annotation.coordinate = userLocation.coordinate
-            mapView.addAnnotation(annotation)
-            
+//            let annotation = MKPointAnnotation()
+//            annotation.title = "You are here"
+//           annotation.coordinate = userLocation.coordinate
+//            mapView.addAnnotation(annotation)
+//
            
             
             
@@ -110,13 +137,25 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             //CLGeocoder().reverseGeocodeLocation()
         }
     
-    func findroute(user: CLLocationCoordinate2D, destination: CLLocationCoordinate2D)
+    func findroute(user: CLLocationCoordinate2D, destination: CLLocationCoordinate2D, route: transporttype)
     {
+        
+        
         let request = MKDirections.Request()
         request.source = MKMapItem(placemark: MKPlacemark(coordinate: user, addressDictionary: nil))
         request.destination = MKMapItem(placemark: MKPlacemark(coordinate: destination, addressDictionary: nil))
         request.requestsAlternateRoutes = true
-        request.transportType = .automobile
+        
+        if route.rawValue == "automobile"
+        {
+            request.transportType = .walking
+
+        }
+        else if route.rawValue == "walking"
+        {
+            request.transportType = .automobile
+        }
+        
 
         let directions = MKDirections(request: request)
 
@@ -132,10 +171,42 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         
     }
     
+    
+    
+    func walkingHandler(alert: UIAlertAction){
+        
+        let currentlocation = mapView.userLocation
+                 let currentlocationcoordinates = CLLocationCoordinate2D(latitude: currentlocation.coordinate.latitude, longitude: currentlocation.coordinate.longitude)
+                 let destinationlocation = mapView.annotations
+                 let destinationlocationcoordinates = CLLocationCoordinate2D(latitude: destinationlocation[0].coordinate.latitude, longitude: destinationlocation[0].coordinate.longitude)
+                 print(String(currentlocationcoordinates.latitude) + " Longitude " + String(currentlocationcoordinates.longitude))
+                 print(String(destinationlocationcoordinates.latitude) + " Longitude " + String(destinationlocationcoordinates.longitude))
+                 
+        findroute(user: currentlocationcoordinates, destination: destinationlocationcoordinates, route: .walking)
+        
+        
+                    // print("You tapped: \(alert.title)")
+                 }
+
+       func autoHandler(alert: UIAlertAction){
+        
+        let currentlocation = mapView.userLocation
+                 let currentlocationcoordinates = CLLocationCoordinate2D(latitude: currentlocation.coordinate.latitude, longitude: currentlocation.coordinate.longitude)
+                 let destinationlocation = mapView.annotations
+                 let destinationlocationcoordinates = CLLocationCoordinate2D(latitude: destinationlocation[0].coordinate.latitude, longitude: destinationlocation[0].coordinate.longitude)
+                 print(String(currentlocationcoordinates.latitude) + " Longitude " + String(currentlocationcoordinates.longitude))
+                 print(String(destinationlocationcoordinates.latitude) + " Longitude " + String(destinationlocationcoordinates.longitude))
+                 
+        findroute(user: currentlocationcoordinates, destination: destinationlocationcoordinates, route: .automobile)
+                   // print("You tapped: \(alert.title)")
+                }
+    
    
 
 
 }
+
+
 
 
 extension ViewController : MKMapViewDelegate
