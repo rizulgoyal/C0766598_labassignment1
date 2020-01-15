@@ -14,8 +14,12 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     
     var locationManager = CLLocationManager()
     
+    var destination2d = CLLocationCoordinate2D()
+    
     
     @IBOutlet var zoomStepperOutlet: UIStepper!
+    
+    
     
    
     
@@ -25,6 +29,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         case walking
         
     }
+    var transport = false
 
     
     
@@ -38,7 +43,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        
+        self.mapView.delegate = self
+
         locationManager.delegate = self
          locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.requestWhenInUseAuthorization()
@@ -85,7 +91,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
                   
             
             
-         let otherAlert = UIAlertController(title: "Transport Type", message: "Please choose one Transport Type.", preferredStyle: UIAlertController.Style.actionSheet)
+        let otherAlert = UIAlertController(title: "Transport Type", message: "Please choose one Transport Type.", preferredStyle: UIAlertController.Style.alert)
 
              
 
@@ -146,6 +152,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             annotation.title = "Latitude:\(coordinate.latitude)"
             annotation.subtitle = "Longitude:\(coordinate.longitude)"
             annotation.coordinate = coordinate
+            destination2d = CLLocationCoordinate2D(latitude: coordinate.latitude, longitude: coordinate.longitude)
             mapView.addAnnotation(annotation)
         }
     
@@ -157,8 +164,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             let lat = userLocation.coordinate.latitude
            let long = userLocation.coordinate.longitude
             //define delta (difference) of lat and long
-            let latDelta : CLLocationDegrees = 0.05
-           let longDelta : CLLocationDegrees = 0.05
+            let latDelta : CLLocationDegrees = 0.09
+           let longDelta : CLLocationDegrees = 0.09
 
     //        //define span
             let span = MKCoordinateSpan(latitudeDelta: latDelta, longitudeDelta: longDelta)
@@ -184,7 +191,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         
         let request = MKDirections.Request()
         request.source = MKMapItem(placemark: MKPlacemark(coordinate: user, addressDictionary: nil))
-        request.destination = MKMapItem(placemark: MKPlacemark(coordinate: destination, addressDictionary: nil))
+        request.destination = MKMapItem(placemark: MKPlacemark(coordinate: destination2d, addressDictionary: nil))
         request.requestsAlternateRoutes = false
         
         if route.rawValue == "automobile"
@@ -209,7 +216,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
                
                 self.mapView.addOverlay(route.polyline)
                 
-                self.mapView.delegate = self
                 self.mapView.setVisibleMapRect(route.polyline.boundingMapRect, animated: true)
             
             
@@ -221,6 +227,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     
     
     func walkingHandler(alert: UIAlertAction){
+        
+        transport = true
         
         let currentlocation = mapView.userLocation
                  let currentlocationcoordinates = CLLocationCoordinate2D(latitude: currentlocation.coordinate.latitude, longitude: currentlocation.coordinate.longitude)
@@ -242,6 +250,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
                  }
 
        func autoHandler(alert: UIAlertAction){
+        
+        transport = false
         
         let currentlocation = mapView.userLocation
                  let currentlocationcoordinates = CLLocationCoordinate2D(latitude: currentlocation.coordinate.latitude, longitude: currentlocation.coordinate.longitude)
@@ -272,9 +282,18 @@ extension ViewController : MKMapViewDelegate
    {
        
        func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-           let renderer = MKPolylineRenderer(polyline: overlay as! MKPolyline)
         
+        
+           let renderer = MKPolylineRenderer(polyline: overlay as! MKPolyline)
+            if transport == true
+                    {
            renderer.strokeColor = UIColor.blue
+        }
+        else
+            {
+                renderer.strokeColor = UIColor.green
+
+        }
            return renderer
        }
    }
