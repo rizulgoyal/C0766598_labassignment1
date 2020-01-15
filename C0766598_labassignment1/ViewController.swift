@@ -142,18 +142,58 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             mapView.removeAnnotations( annotationsToRemove )
             }
             
-            
 
             
             let touchPoint = gestureRecognizer.location(in: mapView)
             let coordinate = mapView.convert(touchPoint, toCoordinateFrom: mapView)
             
             let annotation = MKPointAnnotation()
-            annotation.title = "Latitude:\(coordinate.latitude)"
-            annotation.subtitle = "Longitude:\(coordinate.longitude)"
+           // annotation.title = "Latitude:\(coordinate.latitude)"
+            annotation.subtitle = "Latitude:\(coordinate.latitude) + Longitude:\(coordinate.longitude)"
             annotation.coordinate = coordinate
             destination2d = CLLocationCoordinate2D(latitude: coordinate.latitude, longitude: coordinate.longitude)
             mapView.addAnnotation(annotation)
+            let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+                  
+            CLGeocoder().reverseGeocodeLocation(location){(placemarks, error) in
+            if let error = error
+            {
+                print(error)
+            }
+            else
+            {
+                if let placemark = placemarks?[0]{
+                    var address = ""
+                    if placemark.subThoroughfare != nil{
+                        address = address + placemark.subThoroughfare! + "\n"
+                    }
+                    
+                    if placemark.thoroughfare != nil{
+                        address = address + placemark.thoroughfare! + "\n"
+                    }
+                    
+                    if placemark.subLocality != nil{
+                        address = address + placemark.subLocality!  + "\n"
+                    }
+                    
+                    if placemark.subAdministrativeArea != nil{
+                        annotation.title = placemark.subAdministrativeArea
+
+                        address = address + placemark.subAdministrativeArea! + "\n"
+                    }
+                    
+                    if placemark.postalCode != nil{
+                        address = address + placemark.postalCode! + "\n"
+                    }
+                    
+                    if placemark.country != nil{
+                        address = address + placemark.country! + "\n"
+                    }
+                  
+                    annotation.title = address
+              }
+            }
+            }
         }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
