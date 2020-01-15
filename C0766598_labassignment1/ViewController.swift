@@ -14,6 +14,11 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     
     var locationManager = CLLocationManager()
     
+    
+    @IBOutlet var zoomStepperOutlet: UIStepper!
+    
+   
+    
     enum transporttype : String
     {
         case automobile
@@ -26,6 +31,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     
     
     @IBOutlet var mapView: MKMapView!
+    
+
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -37,6 +46,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         locationManager.startUpdatingLocation()
         mapView.showsUserLocation = true
         
+        zoomStepperOutlet.value = 0
+        zoomStepperOutlet.minimumValue = -5
+        zoomStepperOutlet.maximumValue = 5
+        
         let gestureDoubleTap = UITapGestureRecognizer(target: self, action: #selector(doubleTap))
         gestureDoubleTap.numberOfTapsRequired = 2
                           mapView.addGestureRecognizer(gestureDoubleTap)
@@ -44,7 +57,32 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
          
     }
     
+    @IBAction func mapZoomStepper(_ sender: UIStepper) {
+           
+           if sender.value < 0
+                  {
+                      var region: MKCoordinateRegion = mapView.region
+                      region.span.latitudeDelta = min(region.span.latitudeDelta * 2.0, 180.0)
+                      region.span.longitudeDelta = min(region.span.longitudeDelta * 2.0, 180.0)
+                      mapView.setRegion(region, animated: true)
+                      zoomStepperOutlet.value = 0
+                  }
+                  else
+                  {
+                      var region: MKCoordinateRegion = mapView.region
+                      region.span.latitudeDelta /= 2.0
+                      region.span.longitudeDelta /= 2.0
+                      mapView.setRegion(region, animated: true)
+                      zoomStepperOutlet.value = 0
+                  }
+           
+           
+       }
+    
     @IBAction func buttonNavigation(_ sender: UIButton) {
+        
+       
+                  
             
             
          let otherAlert = UIAlertController(title: "Transport Type", message: "Please choose one Transport Type.", preferredStyle: UIAlertController.Style.actionSheet)
@@ -82,13 +120,24 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         
         @objc func doubleTap(gestureRecognizer : UILongPressGestureRecognizer)
         {
+            var count = mapView.overlays.count
+            if count != 0
+            {
+                mapView.removeOverlays(mapView.overlays)
+            }
+            
+//
+            
             //remove annotations
-            let i = mapView.annotations.count
+            var i = mapView.annotations.count
             if i != 0
             {
             let annotationsToRemove = mapView.annotations.filter { $0 !== mapView.userLocation }
             mapView.removeAnnotations( annotationsToRemove )
             }
+            
+            
+
             
             let touchPoint = gestureRecognizer.location(in: mapView)
             let coordinate = mapView.convert(touchPoint, toCoordinateFrom: mapView)
@@ -139,12 +188,18 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     
     func findroute(user: CLLocationCoordinate2D, destination: CLLocationCoordinate2D, route: transporttype)
     {
+//        let count = mapView.overlays.count
+//        if count != 0
+//        {
+//            mapView.removeOverlays(mapView.overlays)
+//        }
+//
         
         
         let request = MKDirections.Request()
         request.source = MKMapItem(placemark: MKPlacemark(coordinate: user, addressDictionary: nil))
         request.destination = MKMapItem(placemark: MKPlacemark(coordinate: destination, addressDictionary: nil))
-        request.requestsAlternateRoutes = true
+        request.requestsAlternateRoutes = false
         
         if route.rawValue == "automobile"
         {
@@ -163,11 +218,17 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             guard let unwrappedResponse = response else { return }
 
             for route in unwrappedResponse.routes {
+                
+
+               
                 self.mapView.addOverlay(route.polyline)
+                
                 self.mapView.delegate = self
                 self.mapView.setVisibleMapRect(route.polyline.boundingMapRect, animated: true)
+            
             }
     }
+       
         
     }
     
@@ -214,6 +275,7 @@ extension ViewController : MKMapViewDelegate
        
        func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
            let renderer = MKPolylineRenderer(polyline: overlay as! MKPolyline)
+        
            renderer.strokeColor = UIColor.blue
            return renderer
        }
