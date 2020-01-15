@@ -120,7 +120,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         
         @objc func doubleTap(gestureRecognizer : UILongPressGestureRecognizer)
         {
-            var count = mapView.overlays.count
+            let count = mapView.overlays.count
             if count != 0
             {
                 mapView.removeOverlays(mapView.overlays)
@@ -129,7 +129,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
 //
             
             //remove annotations
-            var i = mapView.annotations.count
+            let i = mapView.annotations.count
             if i != 0
             {
             let annotationsToRemove = mapView.annotations.filter { $0 !== mapView.userLocation }
@@ -174,26 +174,12 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
            mapView.setRegion(region, animated: true)
             mapView.showsUserLocation = true
             
-//            let annotation = MKPointAnnotation()
-//            annotation.title = "You are here"
-//           annotation.coordinate = userLocation.coordinate
-//            mapView.addAnnotation(annotation)
-//
-           
-            
-            
-            //find the user address from his location
-            //CLGeocoder().reverseGeocodeLocation()
+
         }
     
     func findroute(user: CLLocationCoordinate2D, destination: CLLocationCoordinate2D, route: transporttype)
     {
-//        let count = mapView.overlays.count
-//        if count != 0
-//        {
-//            mapView.removeOverlays(mapView.overlays)
-//        }
-//
+
         
         
         let request = MKDirections.Request()
@@ -217,7 +203,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         directions.calculate { [unowned self] response, error in
             guard let unwrappedResponse = response else { return }
 
-            for route in unwrappedResponse.routes {
+            let route = unwrappedResponse.routes[0]
                 
 
                
@@ -226,7 +212,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
                 self.mapView.delegate = self
                 self.mapView.setVisibleMapRect(route.polyline.boundingMapRect, animated: true)
             
-            }
+            
     }
        
         
@@ -242,6 +228,12 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
                  let destinationlocationcoordinates = CLLocationCoordinate2D(latitude: destinationlocation[0].coordinate.latitude, longitude: destinationlocation[0].coordinate.longitude)
                  print(String(currentlocationcoordinates.latitude) + " Longitude " + String(currentlocationcoordinates.longitude))
                  print(String(destinationlocationcoordinates.latitude) + " Longitude " + String(destinationlocationcoordinates.longitude))
+        
+        let count = mapView.overlays.count
+                   if count != 0
+                   {
+                       mapView.removeOverlays(mapView.overlays)
+                   }
                  
         findroute(user: currentlocationcoordinates, destination: destinationlocationcoordinates, route: .walking)
         
@@ -257,6 +249,12 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
                  let destinationlocationcoordinates = CLLocationCoordinate2D(latitude: destinationlocation[0].coordinate.latitude, longitude: destinationlocation[0].coordinate.longitude)
                  print(String(currentlocationcoordinates.latitude) + " Longitude " + String(currentlocationcoordinates.longitude))
                  print(String(destinationlocationcoordinates.latitude) + " Longitude " + String(destinationlocationcoordinates.longitude))
+        
+        let count = mapView.overlays.count
+                   if count != 0
+                   {
+                       mapView.removeOverlays(mapView.overlays)
+                   }
                  
         findroute(user: currentlocationcoordinates, destination: destinationlocationcoordinates, route: .automobile)
                    // print("You tapped: \(alert.title)")
