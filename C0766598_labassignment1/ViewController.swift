@@ -287,6 +287,7 @@ extension ViewController : MKMapViewDelegate
            let renderer = MKPolylineRenderer(polyline: overlay as! MKPolyline)
             if transport == true
                     {
+                        renderer.lineDashPattern = [0,10]
            renderer.strokeColor = UIColor.blue
         }
         else
